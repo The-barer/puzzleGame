@@ -1,14 +1,21 @@
 const board = document.querySelector('#playground') 
 const controls = document.querySelector('.controls')
+let moves = 0, time = 55, endTime = '', size = 3, timer, FS
 
-let moves = 0, time = 55, endTime = '', size = 3, timer
+/*
+* Добавить кнопку обновить, окончить, и смену режима перестановок(кликт ту мув -- дабл клик ту драг)
+* Опитимизировать вид под мобильное устройство - смена горизонтального/вертикального.
+* Создать старт по хэшу
+* Запись результатов.
+*/
 
 showStartPage()
-
 board.addEventListener('click', clickToMove)
+board.addEventListener('dblclick',(e)=> {if(e.target.dataset.type === 'piece') {dragAndDrop(e.target)}})
+
 function clickToMove(event) {
     const elem = event.target;
-    (elem.classList.value === 'col') && direction(elem);
+    (elem.dataset.type === 'piece') && direction(elem);
     (elem.dataset.type === 'start') && startGame(size);
     (elem.dataset.type === 'again') && showStartPage();
     (elem.dataset.type === 'easier') && setSize(-1); 
@@ -48,6 +55,7 @@ function startTime() {
 } 
 
 function clearBoard() {
+    clearInterval(timer)
     controls.classList = 'controls'
     board.innerHTML = ''
     board.classList = 'board'
@@ -77,48 +85,55 @@ function generateBoard(number) {
             $col.posY = row
             if(randomlist[index] === 'freespace') {
                 $col.classList.add('FS')
+                $col.dataset.startrow = row+1
             } else {
-                $col.dataset.id =""
+                $col.dataset.type = 'piece'
                 $col.innerHTML = randomlist[index]
             }
             $row.appendChild($col)
         }
     }
-    board.classList.add('start') 
+    board.classList.add('start')
+    FS = board.querySelector('.FS') 
 }
 
 function startGame(num) {
-    clearBoard()
-    startTime()
     generateBoard(num)
+    startTime()
+    if (num > 3) {validateGame()};
     controls.classList.add('start')
 }
-
-function move($elem, newX, newY) {
+function move($elem, newX, newY, drag = false) {
     const y = $elem.posY+newY
     const x = $elem.posX+newX 
-    const fieldSize = board.childNodes.length-1
     const onPlace = board.childNodes[y].childNodes[x];
-    if(((x < 0) || (x > fieldSize)) || ((y < 0) || (y > fieldSize))) {
+    if(((x < 0) || (x > size-1)) || ((y < 0) || (y > size-1))) {
         return console.log('Край')
     }
-    const sizeY = $elem.getBoundingClientRect().height
-    const sizeX = $elem.getBoundingClientRect().height
-    $elem.style.transform = `translate(${newX*sizeX}px, ${newY*sizeY}px)`;
-    
-    setTimeout(() => {
+    switch (drag) {
+        case true:
+            replace()
+            break;
+        default:
+            const sizeY = $elem.getBoundingClientRect().height
+            const sizeX = $elem.getBoundingClientRect().height
+            $elem.style.transform = `translate(${newX*sizeX}px, ${newY*sizeY}px)`;
+            setTimeout(replace, 200);
+            break;
+    }
+    function replace() {
         $elem.style = ''
+        onPlace.style = ''
         board.childNodes[y].insertBefore($elem, onPlace);
         board.childNodes[$elem.posY].insertBefore(onPlace, board.childNodes[$elem.posY].childNodes[$elem.posX]);
         [$elem.posY, $elem.posX] = [y, x];
         [onPlace.posY, onPlace.posX] = [onPlace.posY-newY, onPlace.posX-newX];
         document.querySelector('.movesEl').innerHTML = `Ходов: ${++moves}`
-        validateWin(onPlace.posX, onPlace.posY, fieldSize)
-    }, 200);
+        validateWin()
+    }  
 }
 
 function direction($elem) {
-    const FS = board.querySelector('.FS')
     const x = FS.posX - $elem.posX
     const y = FS.posY - $elem.posY
     if (((x === 0 && Math.abs(y) < 2) || (y === 0 && Math.abs(x) < 2))) {
@@ -126,9 +141,9 @@ function direction($elem) {
     }
 }
 
-function validateWin(x, y, size) {
-    if ((x === 0 && y === 0) || (x === size && y === size)) {
-        const combination = board.querySelectorAll('[data-id]')
+function validateWin() {
+    const combination = board.querySelectorAll('[data-type="piece"]')
+    if ((FS.posX === 0 && FS.posY === 0) || (FS.posX === size-1 && FS.posY === size-1)) {
         for (let i = 0; i < combination.length; i++) {   
             if (parseInt(combination[i].innerHTML) !== i+1) {
                 return
@@ -137,10 +152,31 @@ function validateWin(x, y, size) {
         stopGame()
     }
 }
+function validateGame() {
+    const combination = board.querySelectorAll('[data-type="piece"]')
+    let validateSum = parseInt(FS.dataset.startrow)
+    const validatedSet = new Set
+    let last, prevLast, tmp 
+    for (let i = 0; i < combination.length; i++) {   
+       let current = parseInt(combination[i].innerHTML)
+       if( current === combination.length)  {last = combination[i]};
+       if( current === combination.length-1)  {prevLast = combination[i]};
+       for (let j=1; j<current; j++) {
+            !validatedSet.has(j) && validateSum++
+       }
+       validatedSet.add(current)
+    }
+    if (validateSum%2 !== 0) {
+        tmp = last.innerHTML
+        last.innerHTML = prevLast.innerHTML
+        prevLast.innerHTML = tmp
+    } else {
+        console.log('Все ок, Удачи!');
+    }
+}
 
 function stopGame() {
         board.classList.add('win')
-        clearInterval(timer)
         setTimeout(() => {
             controls.classList.add('end')
             setTimeout(() => {showResultPage(moves)}, 500);
@@ -172,3 +208,49 @@ function showStartPage() {
     </div>`;
     setSize();
 }
+
+function dragAndDrop($dragelem) {
+    $dragelem.classList.add('draggable')
+    $dragelem.setAttribute('draggable', true)
+    board.addEventListener('dragover', dragOver)
+    board.addEventListener('dragstart', dragStart)
+    board.addEventListener('drop', dragDrop)
+    board.addEventListener('dragenter', dragEnter)
+    board.addEventListener('dragleave', dragLeave)
+
+    function dragStart(event) {
+        $dragelem = event.target
+        $dragelem.classList.add('hold')
+        setTimeout(() => {$dragelem.classList.add('hide')}, 0);
+    }
+    function dragOver(event) {
+        event.preventDefault()
+    }
+    function dragEnter(event) {
+        event.target.classList.add('hovered')
+    }
+    function dragLeave(event) {
+        event.target.classList.remove('hovered')
+    }
+    function dragDrop(event) {
+        clearDrag()
+        event.target.classList.remove('hovered')
+        const x = event.target.posX - $dragelem.posX
+        const y = event.target.posY - $dragelem.posY
+        move($dragelem, x, y, true)   
+    }
+    setTimeout(clearDrag, 5000)
+    function clearDrag() {
+        $dragelem.classList.remove('hide')
+        $dragelem.classList.remove('hold')
+        $dragelem.classList.remove('draggable')
+        $dragelem.removeAttribute('draggable', true)
+        board.removeEventListener('dragover', dragOver)
+        board.removeEventListener('dragstart', dragStart)
+        board.removeEventListener('drop', dragDrop)
+        board.removeEventListener('dragenter', dragEnter)
+        board.removeEventListener('dragleave', dragLeave)
+    }
+}
+
+
