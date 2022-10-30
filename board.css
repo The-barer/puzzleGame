@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+
+}
+body {
+    background: linear-gradient(90deg, #36404d 0%, #485563 100%);
+    overflow: hidden;
+}
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+.controls{
+    opacity: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 80vh;
+    padding: 15px 20px;
+    font-size: 1.3rem;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, .3);
+    color: white;
+}   
+.controls.start {
+    opacity: 1;
+    /* animation: fadeIn;
+    animation-duration: 500ms; */
+}
+
+.controls.start .movesEl {
+    animation: bounceInLeft; 
+    animation-duration: 500ms;
+}
+.controls.start .timeEl {
+    animation: bounceInRight; 
+    animation-duration: 500ms;
+}
+.controls.end .movesEl {
+    opacity: 0;
+    animation: bounceOutLeft; 
+    animation-duration: 700ms;
+}
+.controls.end .timeEl {
+    opacity: 0;
+    animation: bounceOutRight; 
+    animation-duration: 700ms;
+}
+
+.board {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(118.38deg, #29323C -4.6%, #485563 200.44%);
+    user-select: none;
+    transition: opacity 500ms ease-out;
+    width: 80vh;
+    height: 80vh;
+    padding: 5px;
+    box-shadow: 0 0 10px 1px #2a333d, -5px 0px 15px 5px #3f4b57;
+    border-radius: 10px;
+}
+.board.start{
+    align-items: unset;
+}
+
+.board.win>div {
+    animation: zoomOut;
+    animation-duration: 700ms;
+    opacity: 0;
+}
+
+.row {
+    display: flex;
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0);
+    overflow: unset;
+}
+
+.col {
+    display: flex;
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.8);
+    margin: 0.5px;
+    border-radius: 5px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: transform 200ms ease-in;
+    box-shadow: 0 0 4px 0px #333d48;
+}
+
+.col.FS {
+    cursor: auto;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.start-btn {
+    width: fit-content;
+    background-color: transparent;
+    border: 2px solid #C0C0C0;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    padding: .5rem 1rem;
+    font-size: 1.7rem;
+    letter-spacing: 0.2rem;
+    margin-bottom: 10px;
+}
+.start-btn:hover {
+    border: 2px solid #16D9E3;
+    color: #16D9E3;
+}
+.result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 90%;
+    width: 90%;
+}
+.result .info {
+    padding: 10px;
+}
+.result-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: .5rem 1rem;
+    font-size: 1.5rem;
+    color: #fff;
+   
+}
+.result-text>strong, .difficulty>strong {
+    color: #16D9E3;
+}
+
+.difficulty {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: .5rem 1rem;
+    font-size: 1.5rem;
+    color: #fff;
+    vertical-align: middle;
+}
+[data-level] {
+
+    left: -25%;
+}
+.difficulty>i {
+
+    cursor: pointer;
+    transition: padding 100ms;
+}
+.fa-angle-left{
+    right: 150%;
+}
+.fa-angle-right{
+    left: 150%;
+}
+.difficulty>i:hover {
+    font-size: 2rem;
+    color: #16D9E3
+}
+
+.difficulty:hover>i {
+    padding: 0 20px;
+    font-size: 2rem;
+
+}
+.start-btn:hover ~ .difficulty>strong {
+    color: #fff;
+}
