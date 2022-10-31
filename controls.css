@@ -1,0 +1,94 @@
+
+.controls{
+    position: relative;
+    opacity: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80vh;
+    margin-bottom: 15px;
+    padding: 15px 20px;
+    font-size: 1.3rem;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, .3);
+    color: white;
+    user-select: none;
+}   
+
+.controls>.movesEl, .controls>.timeEl {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    letter-spacing: 1px;
+}
+.controls.start {
+    opacity: 1;
+}
+.controls.start>.movesEl {
+    animation: bounceInLeft; 
+    animation-duration: 500ms;
+    left: 15px;
+}
+.controls.start>.timeEl {
+    animation: bounceInRight;
+    animation-duration: 500ms;
+    right: 15px;
+}
+.controls>.timeEl>.timecount {
+    width: 100%;
+    padding-left: 3px;
+}
+.controls.end .movesEl {
+    opacity: 0;
+    animation: bounceOutLeft; 
+    animation-duration: 700ms;
+}
+.controls.end .timeEl {
+    opacity: 0;
+    animation: bounceOutRight; 
+    animation-duration: 700ms;
+}
+.controls>.buttons{
+    background: transparent;
+    border: none;
+    color: #fff;
+    position: relative;
+    font-size: 2rem;
+}
+.controls>.buttons>i {
+    margin: 0 20px;
+}
+.controls>.buttons>i:hover{
+    color: #16D9E3
+}
+.controls>.buttons>.dragEnabled {
+    color: #a4faff;
+    text-shadow: 0 0 20px #00ff25;
+    box-shadow: 2px 7px 10px 2px rgb(2 83 239);
+    border-radius: 50%;
+}
+.controls>.prompt {
+    position: absolute;
+    bottom: -10px;
+    font-size: 0.9rem;
+    transition: opacity 100ms ease-in;
+}
+.controls>.prompt.hide {
+    opacity: 0;
+}
+
+@media (max-aspect-ratio: 2/3) {
+    .controls>.buttons {
+        position: fixed;
+        bottom: 5vh;
+    }
+    .controls>.timeEl, .controls>.movesEl {
+        margin-bottom: 5vh;
+    }
+
+}
+@media (max-aspect-ratio: 4/5) {
+    .controls {
+        width: 95vw;
+    }
+}

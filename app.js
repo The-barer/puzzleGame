@@ -1,17 +1,34 @@
 const board = document.querySelector('#playground') 
 const controls = document.querySelector('.controls')
-let moves = 0, time = 55, endTime = '', size = 3, timer, FS
+let moves = 0, time = 0, endTime = '', size = 1, timer, FS
+showStartPage(true)
 
-/*
-* Добавить кнопку обновить, окончить, и смену режима перестановок(кликт ту мув -- дабл клик ту драг)
-* Опитимизировать вид под мобильное устройство - смена горизонтального/вертикального.
-* Создать старт по хэшу
-* Запись результатов.
-*/
-
-showStartPage()
+document.addEventListener('keydown', keyActions)
+controls.addEventListener('click', gameControl)
 board.addEventListener('click', clickToMove)
-board.addEventListener('dblclick',(e)=> {if(e.target.dataset.type === 'piece') {dragAndDrop(e.target)}})
+
+function gameControl(event) {
+    switch (event.target.dataset.type) {
+        case 'stopgame':
+            showStartPage()
+            break;
+        case 'dragg':
+            event.target.classList.toggle('dragEnabled')
+            controls.querySelector('.prompt').classList.toggle('hide')
+            if(event.target.classList.contains('dragEnabled')) {
+                board.removeEventListener('click', clickToMove)
+                board.addEventListener('dblclick',dragAndDrop)
+            } else {
+                board.addEventListener('click', clickToMove)
+                board.removeEventListener('dblclick',dragAndDrop)
+            }
+            break;
+        case 'refresh':
+            startGame(size)
+            break;    
+    }
+
+}
 
 function clickToMove(event) {
     const elem = event.target;
@@ -22,19 +39,17 @@ function clickToMove(event) {
     (elem.dataset.type === 'harder') && setSize(+1);
 }
 
-function setSize(num=0) {
+function setSize(num = 0) {
     const level = document.querySelector('[data-level]')
-    if(level === null){return}
+    const newSize = Math.abs(num) > 1 ? num : size+num ;
     let max = Math.floor(board.getBoundingClientRect().width/50) 
-    if(size+num < 2) {
+    size = newSize
+    if(newSize < 2) {
         size = 2
-        return
-    } else if(size+num > max) {
+    } else if(newSize > max) {
         size = max
-        return
     }
-    size = size + num
-    level.innerHTML = `${size}x${size}`
+    if(level !== null){level.innerHTML = `${size}x${size}`}
 }
 
 function startTime() {
@@ -46,7 +61,7 @@ function startTime() {
             if(num < 10) num = `0${num}`
             return num
         }
-        document.querySelector('.timeEl').innerHTML=`Время: ${zero(minutes)}:${zero(seconds)}`
+        document.querySelector('.timecount').innerHTML=`${zero(minutes)}:${zero(seconds)}`
         endTime = `${minutes} мин ${seconds} cек`
         if(time === 3600) {
             clearInterval(timer)
@@ -59,8 +74,11 @@ function clearBoard() {
     controls.classList = 'controls'
     board.innerHTML = ''
     board.classList = 'board'
+    document.querySelector('.timecount').innerHTML='00:00'
+    document.querySelector('.movescount').innerHTML='0'
     time = 0
     moves = 0
+    document.location.hash = ''
 }
 
 function generateBoard(number) {
@@ -100,15 +118,17 @@ function generateBoard(number) {
 function startGame(num) {
     generateBoard(num)
     startTime()
-    if (num > 3) {validateGame()};
+    if (num > 2) {validateGame()};
     controls.classList.add('start')
+    board.dataset.type = 'playPage'
+    document.location.hash = size
 }
 function move($elem, newX, newY, drag = false) {
     const y = $elem.posY+newY
     const x = $elem.posX+newX 
     const onPlace = board.childNodes[y].childNodes[x];
     if(((x < 0) || (x > size-1)) || ((y < 0) || (y > size-1))) {
-        return console.log('Край')
+        return
     }
     switch (drag) {
         case true:
@@ -128,7 +148,7 @@ function move($elem, newX, newY, drag = false) {
         board.childNodes[$elem.posY].insertBefore(onPlace, board.childNodes[$elem.posY].childNodes[$elem.posX]);
         [$elem.posY, $elem.posX] = [y, x];
         [onPlace.posY, onPlace.posX] = [onPlace.posY-newY, onPlace.posX-newX];
-        document.querySelector('.movesEl').innerHTML = `Ходов: ${++moves}`
+        document.querySelector('.movescount').innerHTML = ++moves
         validateWin()
     }  
 }
@@ -144,8 +164,11 @@ function direction($elem) {
 function validateWin() {
     const combination = board.querySelectorAll('[data-type="piece"]')
     if ((FS.posX === 0 && FS.posY === 0) || (FS.posX === size-1 && FS.posY === size-1)) {
-        for (let i = 0; i < combination.length; i++) {   
+        for (let i = 0; i < combination.length; i++) {
             if (parseInt(combination[i].innerHTML) !== i+1) {
+                if (i+2 === combination.length) {
+                    return move(combination[i], 1, 0) 
+                }
                 return
             }
         }
@@ -154,13 +177,17 @@ function validateWin() {
 }
 function validateGame() {
     const combination = board.querySelectorAll('[data-type="piece"]')
-    let validateSum = parseInt(FS.dataset.startrow)
+    let validateSum = parseInt(FS.dataset.startrow)%2 === 0 ? parseInt(FS.dataset.startrow) : 0
     const validatedSet = new Set
     let last, prevLast, tmp 
     for (let i = 0; i < combination.length; i++) {   
        let current = parseInt(combination[i].innerHTML)
-       if( current === combination.length)  {last = combination[i]};
-       if( current === combination.length-1)  {prevLast = combination[i]};
+       if( current === combination.length)  {
+            last = combination[i]
+        };
+       if( current === combination.length-1)  {
+            prevLast = combination[i]
+        };
        for (let j=1; j<current; j++) {
             !validatedSet.has(j) && validateSum++
        }
@@ -170,9 +197,7 @@ function validateGame() {
         tmp = last.innerHTML
         last.innerHTML = prevLast.innerHTML
         prevLast.innerHTML = tmp
-    } else {
-        console.log('Все ок, Удачи!');
-    }
+    } 
 }
 
 function stopGame() {
@@ -184,6 +209,7 @@ function stopGame() {
 }
 
 function showResultPage(move) {
+    board.dataset.type = 'resultPage'
     clearBoard()
     board.innerHTML=`
     <div class="result">
@@ -198,18 +224,32 @@ function showResultPage(move) {
         <button class="start-btn" data-type="again">Еще раз</button>
     </div>`
 }
-function showStartPage() {
+function showStartPage(isInital) {
+    board.dataset.type = 'startPage'
+    if (isInital) {
+        const sizeInHash = parseInt(document.location.hash.substring(1))
+        if(isFinite(sizeInHash)) {
+            setSize(sizeInHash)
+            return startGame(size)
+        }       
+    }
+    clearBoard()
     board.innerHTML = `
     <button class="start-btn" data-type='start'>Start game</button>
     <div class="difficulty">
         <i class="fa-sharp fa-solid fa-angle-left" data-type="easier"></i>
-        <strong data-level>4x4</strong>
+        <strong data-level></strong>
         <i class="fa-sharp fa-solid fa-angle-right" data-type="harder"></i>
     </div>`;
     setSize();
 }
 
-function dragAndDrop($dragelem) {
+function dragAndDrop(event) {
+    $dragelem = event.target
+    let started = false
+    if($dragelem.dataset.type !== 'piece') {
+        return
+    }
     $dragelem.classList.add('draggable')
     $dragelem.setAttribute('draggable', true)
     board.addEventListener('dragover', dragOver)
@@ -219,6 +259,7 @@ function dragAndDrop($dragelem) {
     board.addEventListener('dragleave', dragLeave)
 
     function dragStart(event) {
+        started = true
         $dragelem = event.target
         $dragelem.classList.add('hold')
         setTimeout(() => {$dragelem.classList.add('hide')}, 0);
@@ -239,7 +280,9 @@ function dragAndDrop($dragelem) {
         const y = event.target.posY - $dragelem.posY
         move($dragelem, x, y, true)   
     }
-    setTimeout(clearDrag, 5000)
+    setTimeout(() => {
+        !started && clearDrag()
+    }, 5000)
     function clearDrag() {
         $dragelem.classList.remove('hide')
         $dragelem.classList.remove('hold')
@@ -253,4 +296,50 @@ function dragAndDrop($dragelem) {
     }
 }
 
-
+function keyActions(event) {
+    event.preventDefault()
+    switch (board.dataset.type) {
+        case 'startPage':
+            event.key === 'Enter' && startGame(size)
+            event.key === 'ArrowLeft' && setSize(-1)
+            event.key === 'ArrowRight' && setSize(+1)
+            break;
+        case 'playPage':
+            playgroundKeys(event)
+            break;
+        case 'resultPage':
+            event.key === 'Enter' && showStartPage(size)
+            break;
+        default:
+            break;
+    }
+    
+    function playgroundKeys(event) {
+        const x = FS.posX
+        const y = FS.posY
+        switch (event.key) {
+            case 'ArrowUp':
+                try{direction(board.childNodes[y+1].childNodes[x])}
+                catch {return}   
+                break;
+            case 'ArrowDown':
+                try{direction(board.childNodes[y-1].childNodes[x])}
+                catch {return} 
+                break;
+            case 'ArrowLeft':
+                try{direction(board.childNodes[y].childNodes[x+1])}
+                catch {return} 
+                break;
+            case 'ArrowRight':
+                try{direction(board.childNodes[y].childNodes[x-1])}
+                catch {return} 
+                break;
+            case 'Enter':
+                startGame(size)
+                break;
+            case 'Escape':
+                showStartPage()
+                break;
+        }
+    }
+}

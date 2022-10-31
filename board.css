@@ -18,41 +18,6 @@ body {
     flex-direction: column;
     align-items: center;
 }
-.controls{
-    opacity: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    width: 80vh;
-    padding: 15px 20px;
-    font-size: 1.3rem;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, .3);
-    color: white;
-}   
-.controls.start {
-    opacity: 1;
-    /* animation: fadeIn;
-    animation-duration: 500ms; */
-}
-
-.controls.start .movesEl {
-    animation: bounceInLeft; 
-    animation-duration: 500ms;
-}
-.controls.start .timeEl {
-    animation: bounceInRight; 
-    animation-duration: 500ms;
-}
-.controls.end .movesEl {
-    opacity: 0;
-    animation: bounceOutLeft; 
-    animation-duration: 700ms;
-}
-.controls.end .timeEl {
-    opacity: 0;
-    animation: bounceOutRight; 
-    animation-duration: 700ms;
-}
 
 .board {
     display: flex;
@@ -139,7 +104,7 @@ body {
     height: 90%;
     width: 90%;
 }
-.result .info {
+.result.info {
     padding: 10px;
 }
 .result-text {
@@ -165,11 +130,9 @@ body {
     vertical-align: middle;
 }
 [data-level] {
-
     left: -25%;
 }
 .difficulty>i {
-
     cursor: pointer;
     transition: padding 100ms;
 }
@@ -187,9 +150,14 @@ body {
 .difficulty:hover>i {
     padding: 0 20px;
     font-size: 2rem;
-
 }
 .start-btn:hover ~ .difficulty>strong {
     color: #fff;
 }
 
+@media (max-aspect-ratio: 4/5) {
+    .board {
+        width: 95vw;
+        height: 95vw;
+    }
+}
