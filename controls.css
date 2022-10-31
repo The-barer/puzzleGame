@@ -78,12 +78,13 @@
 }
 
 @media (max-aspect-ratio: 2/3) {
+    .controls {
+        position: fixed;
+        top: 10vh;
+    }
     .controls>.buttons {
         position: fixed;
         bottom: 5vh;
-    }
-    .controls>.timeEl, .controls>.movesEl {
-        margin-bottom: 5vh;
     }
 
 }
