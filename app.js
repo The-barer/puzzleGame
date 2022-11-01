@@ -3,6 +3,10 @@ const controls = document.querySelector('.controls')
 let moves = 0, time = 0, endTime = '', size = 1, timer, FS
 showStartPage(true)
 
+/**
+ * Исправить драг для мобильных устройств.
+ */
+
 document.addEventListener('keydown', keyActions)
 controls.addEventListener('click', gameControl)
 board.addEventListener('click', clickToMove)
@@ -18,9 +22,11 @@ function gameControl(event) {
             if(event.target.classList.contains('dragEnabled')) {
                 board.removeEventListener('click', clickToMove)
                 board.addEventListener('dblclick',dragAndDrop)
+                addMobileDrag()
             } else {
                 board.addEventListener('click', clickToMove)
                 board.removeEventListener('dblclick',dragAndDrop)
+                removeMobileDrag()
             }
             break;
         case 'refresh':
@@ -32,7 +38,7 @@ function gameControl(event) {
 
 function clickToMove(event) {
     const elem = event.target;
-    (elem.dataset.type === 'piece') && direction(elem);
+    (elem.dataset.type === 'piece') && direction(elem, FS);
     (elem.dataset.type === 'start') && startGame(size);
     (elem.dataset.type === 'again') && showStartPage();
     (elem.dataset.type === 'easier') && setSize(-1); 
@@ -153,10 +159,13 @@ function move($elem, newX, newY, drag = false) {
     }  
 }
 
-function direction($elem) {
-    const x = FS.posX - $elem.posX
-    const y = FS.posY - $elem.posY
+function direction($elem, $FS) {
+    const x = $FS.posX - $elem.posX
+    const y = $FS.posY - $elem.posY
     if (((x === 0 && Math.abs(y) < 2) || (y === 0 && Math.abs(x) < 2))) {
+        return move($elem, x, y)
+    }
+    if ($elem.classList.contains('draggable')) {
         move($elem, x, y)
     }
 }
@@ -245,6 +254,7 @@ function showStartPage(isInital) {
 }
 
 function dragAndDrop(event) {
+    // board.addEventListener('touchstart', clickToPaste)
     $dragelem = event.target
     let started = false
     if($dragelem.dataset.type !== 'piece') {
@@ -257,6 +267,12 @@ function dragAndDrop(event) {
     board.addEventListener('drop', dragDrop)
     board.addEventListener('dragenter', dragEnter)
     board.addEventListener('dragleave', dragLeave)
+
+    // function clickToPaste(event) {
+    //     direction($dragelem, event.target)
+    //     board.removeEventListener('touchstart', clickToPaste)
+    //     clearDrag()
+    // }
 
     function dragStart(event) {
         started = true
@@ -319,19 +335,19 @@ function keyActions(event) {
         const y = FS.posY
         switch (event.key) {
             case 'ArrowUp':
-                try{direction(board.childNodes[y+1].childNodes[x])}
+                try{direction(board.childNodes[y+1].childNodes[x], FS)}
                 catch {return}   
                 break;
             case 'ArrowDown':
-                try{direction(board.childNodes[y-1].childNodes[x])}
+                try{direction(board.childNodes[y-1].childNodes[x], FS)}
                 catch {return} 
                 break;
             case 'ArrowLeft':
-                try{direction(board.childNodes[y].childNodes[x+1])}
+                try{direction(board.childNodes[y].childNodes[x+1, FS])}
                 catch {return} 
                 break;
             case 'ArrowRight':
-                try{direction(board.childNodes[y].childNodes[x-1])}
+                try{direction(board.childNodes[y].childNodes[x-1], FS)}
                 catch {return} 
                 break;
             case 'Enter':
@@ -343,3 +359,4 @@ function keyActions(event) {
         }
     }
 }
+
