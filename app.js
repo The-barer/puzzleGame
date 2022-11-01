@@ -47,7 +47,8 @@ function clickToMove(event) {
 function setSize(num = 0) {
     const level = document.querySelector('[data-level]')
     const newSize = Math.abs(num) > 1 ? num : size+num ;
-    let max = Math.floor(board.getBoundingClientRect().width/50) 
+    let max = Math.floor(board.getBoundingClientRect().width/70) 
+    console.log(max);
     size = newSize
     if(newSize < 3) {
         size = 3
