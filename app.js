@@ -77,6 +77,7 @@ function startTime() {
 function clearBoard() {
     clearInterval(timer)
     controls.classList = 'controls'
+    document.querySelector('[data-type="dragg"]').classList.remove('dragEnabled')
     playground.innerHTML = ''
     backboard.innerHTML = ''
     playground.classList = 'playground'
@@ -310,14 +311,14 @@ function dragAndDrop(event) {
         event.target.classList.remove('hovered')
     }
     function dragDrop(event) {
+        event.target.classList.remove('hovered')
         direction($dragelem, event.target)  
-        clearDrag(event) 
+        clearDrag() 
     }
     setTimeout(() => {
         !started && clearDrag()
     }, 5000)
-    function clearDrag(event) {
-        event.target.classList.remove('hovered')
+    function clearDrag() {
         $dragelem.classList.remove('hide')
         $dragelem.classList.remove('hold')
         $dragelem.classList.remove('draggable')
