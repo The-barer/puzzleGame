@@ -84,11 +84,11 @@
     }
     .controls>.buttons {
         position: fixed;
-        bottom: 10vh;
+        bottom: 7vh;
     }
     .controls>.prompt {
         position: fixed;
-        bottom: 5vh; 
+        bottom: 2vh; 
     }
 
 }
