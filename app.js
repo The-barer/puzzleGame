@@ -3,10 +3,6 @@ const controls = document.querySelector('.controls')
 let moves = 0, time = 0, endTime = '', size = 1, timer, FS
 showStartPage(true)
 
-/**
- * Исправить драг для мобильных устройств.
- */
-
 document.addEventListener('keydown', keyActions)
 controls.addEventListener('click', gameControl)
 board.addEventListener('click', clickToMove)
@@ -21,8 +17,9 @@ function gameControl(event) {
             controls.querySelector('.prompt').classList.toggle('hide')
             if(event.target.classList.contains('dragEnabled')) {
                 board.removeEventListener('click', clickToMove)
-                board.addEventListener('dblclick',dragAndDrop)
+                board.addEventListener('dblclick', dragAndDrop)
                 addMobileDrag()
+
             } else {
                 board.addEventListener('click', clickToMove)
                 board.removeEventListener('dblclick',dragAndDrop)
@@ -254,7 +251,7 @@ function showStartPage(isInital) {
 }
 
 function dragAndDrop(event) {
-    // board.addEventListener('touchstart', clickToPaste)
+
     $dragelem = event.target
     let started = false
     if($dragelem.dataset.type !== 'piece') {
@@ -267,12 +264,6 @@ function dragAndDrop(event) {
     board.addEventListener('drop', dragDrop)
     board.addEventListener('dragenter', dragEnter)
     board.addEventListener('dragleave', dragLeave)
-
-    // function clickToPaste(event) {
-    //     direction($dragelem, event.target)
-    //     board.removeEventListener('touchstart', clickToPaste)
-    //     clearDrag()
-    // }
 
     function dragStart(event) {
         started = true

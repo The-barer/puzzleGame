@@ -2,14 +2,28 @@ let touched = false
 let waited = false
 let $waitedElement
 
+function promptClickText() {
+    document.querySelector('.prompt').innerHTML = 'Нажимить два раза на объект, затем перетащите'
+    board.removeEventListener('click', promptClickText)
+}
+function promptTouchText() {
+    document.querySelector('.prompt').innerHTML = 'Каснитесь и подержите на объекте, переставьте'
+    board.removeEventListener('click', promptTouchText)
+}
+
 function addMobileDrag() {
     board.addEventListener('touchstart', touchStart)
     board.addEventListener('touchend', touchEnd)
+    board.addEventListener('click', promptClickText)
+    board.addEventListener('touchstart', promptTouchText)
 }
 
 function removeMobileDrag() {
+    document.querySelector('.prompt').innerHTML = ''
     board.removeEventListener('touchstart', touchStart)
     board.removeEventListener('touchend', touchEnd)
+    board.removeEventListener('click', promptClickText)
+    board.removeEventListener('click', promptTouchText)
 }
 
 function touchEnd(event) {
@@ -21,7 +35,6 @@ function touchStart(event) {
     touched = true
     if (waited) {
         //Если уже активирован объект, то обрабатываем касание на новый и делаем перемещение
-        console.log($waitedElement, event.target);
         direction($waitedElement, event.target)
         clearTouch()
         return
