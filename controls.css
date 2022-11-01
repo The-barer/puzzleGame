@@ -75,6 +75,7 @@
 }
 .controls>.prompt.hide {
     opacity: 0;
+    
 }
 
 @media (max-aspect-ratio: 2/3) {
@@ -97,3 +98,4 @@
         width: 95vw;
     }
 }
+

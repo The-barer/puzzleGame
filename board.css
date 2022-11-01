@@ -159,5 +159,6 @@ body {
     .board {
         width: 95vw;
         height: 95vw;
+        transform: translateY(-5vh);
     }
 }
