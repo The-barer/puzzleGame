@@ -90,6 +90,8 @@
     .controls>.prompt {
         position: fixed;
         bottom: 2vh; 
+        width: 100%;
+        text-align: center;
     }
 
 }
