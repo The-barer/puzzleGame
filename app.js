@@ -2,7 +2,7 @@ const playground = document.querySelector('#playground')
 const board = document.querySelector('.board') 
 const backboard = document.querySelector('.backboard')
 const controls = document.querySelector('.controls')
-let moves = 0, time = 0, endTime = '', size = 1, timer, FS
+let moves = 0, time = 0, endTime = '', size = 1, timer, FS, isMoveing = false
 showStartPage(true)
 
 document.addEventListener('keydown', keyActions)
@@ -141,6 +141,10 @@ function startGame(num) {
     document.location.hash = size
 }
 function move($elem, newX, newY, drag = false) {
+    if (isMoveing) {
+        return
+    }
+    isMoveing = true
     const y = $elem.posY+newY
     const x = $elem.posX+newX 
     const onPlace = playground.childNodes[y].childNodes[x];
@@ -167,6 +171,7 @@ function move($elem, newX, newY, drag = false) {
         [onPlace.posY, onPlace.posX] = [onPlace.posY-newY, onPlace.posX-newX];
         document.querySelector('.movescount').innerHTML = ++moves
         validateWin()
+        setTimeout(() => {isMoveing = false}, 0)
     }  
 }
 
