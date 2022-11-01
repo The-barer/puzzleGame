@@ -18,42 +18,70 @@ body {
     flex-direction: column;
     align-items: center;
 }
-
-.board {
+.backboard{
+    position: absolute;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(118.38deg, #29323C -4.6%, #485563 200.44%);
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+}
+.board {
+    position: relative;
+    display: flex;
     user-select: none;
-    transition: opacity 500ms ease-out;
     width: 80vh;
     height: 80vh;
-    padding: 5px;
     box-shadow: 0 0 10px 1px #2a333d, -5px 0px 15px 5px #3f4b57;
     border-radius: 10px;
+    background: linear-gradient(118.38deg, #29323C -4.6%, #485563 200.44%);
+
 }
-.board.start{
+.playground {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 300ms ease-in;
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    background-color: transparent;
+}
+.playground.hide {
+    opacity: 0;
+}
+.playground.start {
     align-items: unset;
+    opacity: 1;
+    z-index: 10;
 }
 
-.board.win>div {
+.playground.win>div, .backboard.win>div {
     animation: zoomOut;
     animation-duration: 700ms;
     opacity: 0;
 }
+
 
 .row {
     display: flex;
     flex: 1;
     background-color: rgba(0, 0, 0, 0);
     overflow: unset;
+    width: 100%;
 }
 
 .col {
     display: flex;
     flex: 1;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(209, 209, 209, 0.9);
     margin: 0.5px;
     border-radius: 5px;
     cursor: pointer;
@@ -61,6 +89,17 @@ body {
     justify-content: center;
     transition: transform 200ms ease-in;
     box-shadow: 0 0 4px 0px #333d48;
+    font-size: 3rem;
+}
+.backcol {
+    display: flex;
+    flex: 1;
+    margin: 0.5px;
+    border-radius: 5px;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.1);
+    font-size: 3rem;
 }
 .col.hold {
     border: none;
@@ -76,6 +115,7 @@ body {
 .col.FS {
     cursor: auto;
     background-color: rgba(0, 0, 0, 0);
+    box-shadow: none;
 }
 .draggable{
     box-shadow: inset 0 0 10px 2px rgb(2 83 239 / 29%), 0 0 20px 2px rgb(2 83 239 / 29%);
@@ -159,6 +199,5 @@ body {
     .board {
         width: 95vw;
         height: 95vw;
-        transform: translateY(-5vh);
     }
 }

@@ -78,14 +78,14 @@
     
 }
 
-@media (max-aspect-ratio: 2/3) {
+@media (max-aspect-ratio: 4/5) {
     .controls {
         position: fixed;
-        top: 10vh;
+        top: 5vh;
     }
     .controls>.buttons {
         position: fixed;
-        bottom: 7vh;
+        bottom: 5vh;
     }
     .controls>.prompt {
         position: fixed;

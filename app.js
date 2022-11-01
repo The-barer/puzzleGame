@@ -1,4 +1,6 @@
-const board = document.querySelector('#playground') 
+const playground = document.querySelector('#playground')
+const board = document.querySelector('.board') 
+const backboard = document.querySelector('.backboard')
 const controls = document.querySelector('.controls')
 let moves = 0, time = 0, endTime = '', size = 1, timer, FS
 showStartPage(true)
@@ -47,8 +49,8 @@ function setSize(num = 0) {
     const newSize = Math.abs(num) > 1 ? num : size+num ;
     let max = Math.floor(board.getBoundingClientRect().width/50) 
     size = newSize
-    if(newSize < 2) {
-        size = 2
+    if(newSize < 3) {
+        size = 3
     } else if(newSize > max) {
         size = max
     }
@@ -75,8 +77,10 @@ function startTime() {
 function clearBoard() {
     clearInterval(timer)
     controls.classList = 'controls'
-    board.innerHTML = ''
-    board.classList = 'board'
+    playground.innerHTML = ''
+    backboard.innerHTML = ''
+    playground.classList = 'playground'
+    backboard.classList = 'backboard'
     document.querySelector('.timecount').innerHTML='00:00'
     document.querySelector('.movescount').innerHTML='0'
     time = 0
@@ -97,10 +101,17 @@ function generateBoard(number) {
     for (let row = 0; row < number; row++) {
         const $row = document.createElement('div')
         $row.classList.add('row')
-        board.appendChild($row)
+        const $backRow = document.createElement('div')
+        $backRow.classList.add('row')
+        playground.appendChild($row)
+        backboard.appendChild($backRow)
         for (let col = 0; col < number; col++) {
             const index = (row * number) + (col)
             const $col = document.createElement('div')
+            const $backCol = document.createElement('div')
+            $backCol.classList.add('backcol')
+            $backCol.innerHTML = index+1 !== number**2 ? index+1 : "";
+            $backRow.appendChild($backCol)
             $col.classList.add('col')
             $col.posX = col
             $col.posY = row
@@ -114,11 +125,14 @@ function generateBoard(number) {
             $row.appendChild($col)
         }
     }
-    board.classList.add('start')
-    FS = board.querySelector('.FS') 
+    setTimeout(() => {
+        playground.classList.add('start')
+    }, 1000); 
+    FS = playground.querySelector('.FS') 
 }
 
 function startGame(num) {
+    
     generateBoard(num)
     startTime()
     if (num > 2) {validateGame()};
@@ -129,7 +143,7 @@ function startGame(num) {
 function move($elem, newX, newY, drag = false) {
     const y = $elem.posY+newY
     const x = $elem.posX+newX 
-    const onPlace = board.childNodes[y].childNodes[x];
+    const onPlace = playground.childNodes[y].childNodes[x];
     if(((x < 0) || (x > size-1)) || ((y < 0) || (y > size-1))) {
         return
     }
@@ -147,8 +161,8 @@ function move($elem, newX, newY, drag = false) {
     function replace() {
         $elem.style = ''
         onPlace.style = ''
-        board.childNodes[y].insertBefore($elem, onPlace);
-        board.childNodes[$elem.posY].insertBefore(onPlace, board.childNodes[$elem.posY].childNodes[$elem.posX]);
+        playground.childNodes[y].insertBefore($elem, onPlace);
+        playground.childNodes[$elem.posY].insertBefore(onPlace, playground.childNodes[$elem.posY].childNodes[$elem.posX]);
         [$elem.posY, $elem.posX] = [y, x];
         [onPlace.posY, onPlace.posX] = [onPlace.posY-newY, onPlace.posX-newX];
         document.querySelector('.movescount').innerHTML = ++moves
@@ -168,7 +182,7 @@ function direction($elem, $FS) {
 }
 
 function validateWin() {
-    const combination = board.querySelectorAll('[data-type="piece"]')
+    const combination = playground.querySelectorAll('[data-type="piece"]')
     if ((FS.posX === 0 && FS.posY === 0) || (FS.posX === size-1 && FS.posY === size-1)) {
         for (let i = 0; i < combination.length; i++) {
             if (parseInt(combination[i].innerHTML) !== i+1) {
@@ -182,7 +196,7 @@ function validateWin() {
     }
 }
 function validateGame() {
-    const combination = board.querySelectorAll('[data-type="piece"]')
+    const combination = playground.querySelectorAll('[data-type="piece"]')
     let validateSum = parseInt(FS.dataset.startrow)%2 === 0 ? parseInt(FS.dataset.startrow) : 0
     const validatedSet = new Set
     let last, prevLast, tmp 
@@ -207,7 +221,8 @@ function validateGame() {
 }
 
 function stopGame() {
-        board.classList.add('win')
+        playground.classList.add('win')
+        backboard.classList.add('win')
         setTimeout(() => {
             controls.classList.add('end')
             setTimeout(() => {showResultPage(moves)}, 500);
@@ -217,7 +232,7 @@ function stopGame() {
 function showResultPage(move) {
     board.dataset.type = 'resultPage'
     clearBoard()
-    board.innerHTML=`
+    backboard.innerHTML=`
     <div class="result">
         <div class="result-text">
             <p>Время</p>
@@ -240,7 +255,7 @@ function showStartPage(isInital) {
         }       
     }
     clearBoard()
-    board.innerHTML = `
+    backboard.innerHTML = `
     <button class="start-btn" data-type='start'>Start game</button>
     <div class="difficulty">
         <i class="fa-sharp fa-solid fa-angle-left" data-type="easier"></i>
@@ -259,11 +274,11 @@ function dragAndDrop(event) {
     }
     $dragelem.classList.add('draggable')
     $dragelem.setAttribute('draggable', true)
-    board.addEventListener('dragover', dragOver)
-    board.addEventListener('dragstart', dragStart)
-    board.addEventListener('drop', dragDrop)
-    board.addEventListener('dragenter', dragEnter)
-    board.addEventListener('dragleave', dragLeave)
+    playground.addEventListener('dragover', dragOver)
+    playground.addEventListener('dragstart', dragStart)
+    playground.addEventListener('drop', dragDrop)
+    playground.addEventListener('dragenter', dragEnter)
+    playground.addEventListener('dragleave', dragLeave)
 
     function dragStart(event) {
         started = true
@@ -295,11 +310,11 @@ function dragAndDrop(event) {
         $dragelem.classList.remove('hold')
         $dragelem.classList.remove('draggable')
         $dragelem.removeAttribute('draggable', true)
-        board.removeEventListener('dragover', dragOver)
-        board.removeEventListener('dragstart', dragStart)
-        board.removeEventListener('drop', dragDrop)
-        board.removeEventListener('dragenter', dragEnter)
-        board.removeEventListener('dragleave', dragLeave)
+        playground.removeEventListener('dragover', dragOver)
+        playground.removeEventListener('dragstart', dragStart)
+        playground.removeEventListener('drop', dragDrop)
+        playground.removeEventListener('dragenter', dragEnter)
+        playground.removeEventListener('dragleave', dragLeave)
     }
 }
 
@@ -326,19 +341,19 @@ function keyActions(event) {
         const y = FS.posY
         switch (event.key) {
             case 'ArrowUp':
-                try{direction(board.childNodes[y+1].childNodes[x], FS)}
+                try{direction(playground.childNodes[y+1].childNodes[x], FS)}
                 catch {return}   
                 break;
             case 'ArrowDown':
-                try{direction(board.childNodes[y-1].childNodes[x], FS)}
+                try{direction(playground.childNodes[y-1].childNodes[x], FS)}
                 catch {return} 
                 break;
             case 'ArrowLeft':
-                try{direction(board.childNodes[y].childNodes[x+1, FS])}
+                try{direction(playground.childNodes[y].childNodes[x+1], FS)}
                 catch {return} 
                 break;
             case 'ArrowRight':
-                try{direction(board.childNodes[y].childNodes[x-1], FS)}
+                try{direction(playground.childNodes[y].childNodes[x-1], FS)}
                 catch {return} 
                 break;
             case 'Enter':
