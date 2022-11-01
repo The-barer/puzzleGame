@@ -19,12 +19,12 @@ function gameControl(event) {
             controls.querySelector('.prompt').classList.toggle('hide')
             if(event.target.classList.contains('dragEnabled')) {
                 board.removeEventListener('click', clickToMove)
-                board.addEventListener('dblclick', dragAndDrop)
+                board.addEventListener('click', dragAndDrop)
                 addMobileDrag()
 
             } else {
                 board.addEventListener('click', clickToMove)
-                board.removeEventListener('dblclick',dragAndDrop)
+                board.removeEventListener('click',dragAndDrop)
                 removeMobileDrag()
             }
             break;
@@ -284,6 +284,7 @@ function dragAndDrop(event) {
     playground.addEventListener('drop', dragDrop)
     playground.addEventListener('dragenter', dragEnter)
     playground.addEventListener('dragleave', dragLeave)
+    playground.addEventListener('dragend', dragEnd)
 
     function dragStart(event) {
         started = true
@@ -307,6 +308,9 @@ function dragAndDrop(event) {
         const y = event.target.posY - $dragelem.posY
         move($dragelem, x, y, true)   
     }
+    function dragEnd(event) {
+        clearDrag()
+    }
     setTimeout(() => {
         !started && clearDrag()
     }, 5000)
@@ -320,6 +324,7 @@ function dragAndDrop(event) {
         playground.removeEventListener('drop', dragDrop)
         playground.removeEventListener('dragenter', dragEnter)
         playground.removeEventListener('dragleave', dragLeave)
+        playground.removeEventListener('dragend', dragEnd)
     }
 }
 
@@ -370,4 +375,3 @@ function keyActions(event) {
         }
     }
 }
-
