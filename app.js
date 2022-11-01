@@ -86,6 +86,9 @@ function clearBoard() {
     time = 0
     moves = 0
     document.location.hash = ''
+    board.addEventListener('click', clickToMove)
+    board.removeEventListener('click',dragAndDrop)
+    removeMobileDrag()
 }
 
 function generateBoard(number) {
@@ -132,7 +135,6 @@ function generateBoard(number) {
 }
 
 function startGame(num) {
-    
     generateBoard(num)
     startTime()
     if (num > 2) {validateGame()};
@@ -142,11 +144,13 @@ function startGame(num) {
 }
 function move($elem, newX, newY, drag = false) {
     if (isMoveing) {
-        return
+        return 
     }
     isMoveing = true
     const y = $elem.posY+newY
-    const x = $elem.posX+newX 
+    const x = $elem.posX+newX
+    const oldX = $elem.posX
+    const oldY = $elem.posY
     const onPlace = playground.childNodes[y].childNodes[x];
     if(((x < 0) || (x > size-1)) || ((y < 0) || (y > size-1))) {
         return
@@ -166,23 +170,27 @@ function move($elem, newX, newY, drag = false) {
         $elem.style = ''
         onPlace.style = ''
         playground.childNodes[y].insertBefore($elem, onPlace);
-        playground.childNodes[$elem.posY].insertBefore(onPlace, playground.childNodes[$elem.posY].childNodes[$elem.posX]);
-        [$elem.posY, $elem.posX] = [y, x];
-        [onPlace.posY, onPlace.posX] = [onPlace.posY-newY, onPlace.posX-newX];
+        if(oldX !== size-1){
+            playground.childNodes[oldY].insertBefore(onPlace, playground.childNodes[oldY].childNodes[oldX]);
+        } else {
+            playground.childNodes[oldY].appendChild(onPlace);
+        }
+        [$elem.posX, $elem.posY] = [x, y];
+        [onPlace.posX, onPlace.posY] = [oldX, oldY];
         document.querySelector('.movescount').innerHTML = ++moves
+        isMoveing = false
         validateWin()
-        setTimeout(() => {isMoveing = false}, 0)
     }  
 }
 
 function direction($elem, $FS) {
-    const x = $FS.posX - $elem.posX
-    const y = $FS.posY - $elem.posY
-    if (((x === 0 && Math.abs(y) < 2) || (y === 0 && Math.abs(x) < 2))) {
-        return move($elem, x, y)
+    const directX = $FS.posX - $elem.posX
+    const directY = $FS.posY - $elem.posY
+    if (((directX === 0 && Math.abs(directY) < 2) || (directY === 0 && Math.abs(directX) < 2))) {
+        return move($elem, directX, directY)
     }
     if ($elem.classList.contains('draggable')) {
-        move($elem, x, y)
+        move($elem, directX, directY, true)
     }
 }
 
@@ -202,7 +210,7 @@ function validateWin() {
 }
 function validateGame() {
     const combination = playground.querySelectorAll('[data-type="piece"]')
-    let validateSum = parseInt(FS.dataset.startrow)%2 === 0 ? parseInt(FS.dataset.startrow) : 0
+    let validateSum = size%2 === 0 ? parseInt(FS.dataset.startrow) : 0;
     const validatedSet = new Set
     let last, prevLast, tmp 
     for (let i = 0; i < combination.length; i++) {   
@@ -284,7 +292,7 @@ function dragAndDrop(event) {
     playground.addEventListener('drop', dragDrop)
     playground.addEventListener('dragenter', dragEnter)
     playground.addEventListener('dragleave', dragLeave)
-    playground.addEventListener('dragend', dragEnd)
+    playground.addEventListener('dragend', clearDrag)
 
     function dragStart(event) {
         started = true
@@ -302,19 +310,14 @@ function dragAndDrop(event) {
         event.target.classList.remove('hovered')
     }
     function dragDrop(event) {
-        clearDrag()
-        event.target.classList.remove('hovered')
-        const x = event.target.posX - $dragelem.posX
-        const y = event.target.posY - $dragelem.posY
-        move($dragelem, x, y, true)   
-    }
-    function dragEnd(event) {
-        clearDrag()
+        direction($dragelem, event.target)  
+        clearDrag(event) 
     }
     setTimeout(() => {
         !started && clearDrag()
     }, 5000)
-    function clearDrag() {
+    function clearDrag(event) {
+        event.target.classList.remove('hovered')
         $dragelem.classList.remove('hide')
         $dragelem.classList.remove('hold')
         $dragelem.classList.remove('draggable')
@@ -324,7 +327,7 @@ function dragAndDrop(event) {
         playground.removeEventListener('drop', dragDrop)
         playground.removeEventListener('dragenter', dragEnter)
         playground.removeEventListener('dragleave', dragLeave)
-        playground.removeEventListener('dragend', dragEnd)
+        playground.removeEventListener('dragend', clearDrag)
     }
 }
 

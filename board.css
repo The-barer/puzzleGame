@@ -199,5 +199,6 @@ body {
     .board {
         width: 95vw;
         height: 95vw;
+        top: -5%;
     }
 }
