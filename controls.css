@@ -72,6 +72,8 @@
     bottom: -10px;
     font-size: 0.9rem;
     transition: opacity 100ms ease-in;
+    width: 100%;
+    text-align: center;
 }
 .controls>.prompt.hide {
     opacity: 0;
@@ -85,13 +87,11 @@
     }
     .controls>.buttons {
         position: fixed;
-        bottom: 5vh;
+        bottom: 2vh;
     }
     .controls>.prompt {
         position: fixed;
-        bottom: 2vh; 
-        width: 100%;
-        text-align: center;
+        bottom: 8vh; 
     }
 
 }
