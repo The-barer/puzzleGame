@@ -143,19 +143,21 @@ function startGame(num) {
     board.dataset.type = 'playPage'
     document.location.hash = size
 }
+
 function move($elem, newX, newY, drag = false) {
     if (isMoveing) {
         return 
     }
     isMoveing = true
-    const y = $elem.posY+newY
-    const x = $elem.posX+newX
-    const oldX = $elem.posX
-    const oldY = $elem.posY
-    const onPlace = playground.childNodes[y].childNodes[x];
+    const y = $elem.posY + newY
+    const x = $elem.posX + newX
     if(((x < 0) || (x > size-1)) || ((y < 0) || (y > size-1))) {
         return
     }
+    const oldX = $elem.posX
+    const oldY = $elem.posY
+    const onPlace = playground.childNodes[y].childNodes[x];
+    
     switch (drag) {
         case true:
             replace()
@@ -169,13 +171,17 @@ function move($elem, newX, newY, drag = false) {
     }
     function replace() {
         $elem.style = ''
-        onPlace.style = ''
         playground.childNodes[y].insertBefore($elem, onPlace);
-        if(oldX !== size-1){
-            playground.childNodes[oldY].insertBefore(onPlace, playground.childNodes[oldY].childNodes[oldX]);
-        } else {
+
+        if(oldX === size-1){
             playground.childNodes[oldY].appendChild(onPlace);
+        } else if(newY === 0 && newX < 0 ){
+            playground.childNodes[oldY].insertBefore(onPlace, playground.childNodes[oldY].childNodes[oldX].nextSibling);
+        } else {
+            playground.childNodes[oldY].insertBefore(onPlace, playground.childNodes[oldY].childNodes[oldX]);
         }
+
+
         [$elem.posX, $elem.posY] = [x, y];
         [onPlace.posX, onPlace.posY] = [oldX, oldY];
         document.querySelector('.movescount').innerHTML = ++moves
@@ -184,9 +190,9 @@ function move($elem, newX, newY, drag = false) {
     }  
 }
 
-function direction($elem, $FS) {
-    const directX = $FS.posX - $elem.posX
-    const directY = $FS.posY - $elem.posY
+function direction($elem, $newPlace) {
+    const directX = $newPlace.posX - $elem.posX
+    const directY = $newPlace.posY - $elem.posY
     if (((directX === 0 && Math.abs(directY) < 2) || (directY === 0 && Math.abs(directX) < 2))) {
         return move($elem, directX, directY)
     }
