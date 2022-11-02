@@ -1,48 +1,10 @@
+const dragPrompt = document.querySelector('.prompt')
 const playground = document.querySelector('#playground')
 const board = document.querySelector('.board') 
 const backboard = document.querySelector('.backboard')
 const controls = document.querySelector('.controls')
+
 let moves = 0, time = 0, endTime = '', size = 1, timer, FS, isMoveing = false
-showStartPage(true)
-
-document.addEventListener('keydown', keyActions)
-controls.addEventListener('click', gameControl)
-board.addEventListener('click', clickToMove)
-
-function gameControl(event) {
-    switch (event.target.dataset.type) {
-        case 'stopgame':
-            showStartPage()
-            break;
-        case 'dragg':
-            event.target.classList.toggle('dragEnabled')
-            controls.querySelector('.prompt').classList.toggle('hide')
-            if(event.target.classList.contains('dragEnabled')) {
-                board.removeEventListener('click', clickToMove)
-                board.addEventListener('click', dragAndDrop)
-                addMobileDrag()
-
-            } else {
-                board.addEventListener('click', clickToMove)
-                board.removeEventListener('click',dragAndDrop)
-                removeMobileDrag()
-            }
-            break;
-        case 'refresh':
-            startGame(size)
-            break;    
-    }
-
-}
-
-function clickToMove(event) {
-    const elem = event.target;
-    (elem.dataset.type === 'piece') && direction(elem, FS);
-    (elem.dataset.type === 'start') && startGame(size);
-    (elem.dataset.type === 'again') && showStartPage();
-    (elem.dataset.type === 'easier') && setSize(-1); 
-    (elem.dataset.type === 'harder') && setSize(+1);
-}
 
 function setSize(num = 0) {
     const level = document.querySelector('[data-level]')
@@ -82,14 +44,12 @@ function clearBoard() {
     backboard.innerHTML = ''
     playground.classList = 'playground'
     backboard.classList = 'backboard'
+    dragPrompt.classList.add('hide')
     document.querySelector('.timecount').innerHTML='00:00'
     document.querySelector('.movescount').innerHTML='0'
     time = 0
     moves = 0
     document.location.hash = ''
-    board.addEventListener('click', clickToMove)
-    board.removeEventListener('click',dragAndDrop)
-    removeMobileDrag()
 }
 
 function generateBoard(number) {
@@ -142,72 +102,54 @@ function startGame(num) {
     controls.classList.add('start')
     board.dataset.type = 'playPage'
     document.location.hash = size
+    baseEvents()
 }
 
-function move($elem, newX, newY, drag = false) {
+function move($elem, $newPlace) {
+    if(typeof $elem === 'undefined'){
+        return
+    }
     if (isMoveing) {
         return 
     }
     isMoveing = true
-    const y = $elem.posY + newY
-    const x = $elem.posX + newX
-    if(((x < 0) || (x > size-1)) || ((y < 0) || (y > size-1))) {
-        return
-    }
+    const newX = $newPlace.posX
+    const newY = $newPlace.posY 
     const oldX = $elem.posX
     const oldY = $elem.posY
-    const onPlace = playground.childNodes[y].childNodes[x];
-    
-    switch (drag) {
-        case true:
-            replace()
-            break;
-        default:
-            const sizeY = $elem.getBoundingClientRect().height
-            const sizeX = $elem.getBoundingClientRect().height
-            $elem.style.transform = `translate(${newX*sizeX}px, ${newY*sizeY}px)`;
-            setTimeout(replace, 200);
-            break;
+    if ($elem.classList.contains('draggable')) {
+        return replace()
+    } else {
+        const sizeY = $elem.getBoundingClientRect().height
+        const sizeX = $elem.getBoundingClientRect().height
+        $elem.style.transform = `translate(${(newX-oldX)*sizeX}px, ${(newY-oldY)*sizeY}px)`;
+        setTimeout(replace, 200);
     }
     function replace() {
         $elem.style = ''
-        playground.childNodes[y].insertBefore($elem, onPlace);
-
+        playground.childNodes[newY].insertBefore($elem, $newPlace);
         if(oldX === size-1){
-            playground.childNodes[oldY].appendChild(onPlace);
-        } else if(newY === 0 && newX < 0 ){
-            playground.childNodes[oldY].insertBefore(onPlace, playground.childNodes[oldY].childNodes[oldX].nextSibling);
+            playground.childNodes[oldY].appendChild($newPlace);
+        } else if(newY === oldY && newX < oldX ){
+            playground.childNodes[oldY].insertBefore($newPlace, playground.childNodes[oldY].childNodes[oldX].nextSibling);
         } else {
-            playground.childNodes[oldY].insertBefore(onPlace, playground.childNodes[oldY].childNodes[oldX]);
+            playground.childNodes[oldY].insertBefore($newPlace, playground.childNodes[oldY].childNodes[oldX]);
         }
-
-
-        [$elem.posX, $elem.posY] = [x, y];
-        [onPlace.posX, onPlace.posY] = [oldX, oldY];
+        [$elem.posX, $elem.posY] = [newX, newY];
+        [$newPlace.posX, $newPlace.posY] = [oldX, oldY];
         document.querySelector('.movescount').innerHTML = ++moves
         isMoveing = false
         validateWin()
     }  
 }
 
-function direction($elem, $newPlace) {
-    const directX = $newPlace.posX - $elem.posX
-    const directY = $newPlace.posY - $elem.posY
-    if ($elem.classList.contains('draggable')) {
-        return move($elem, directX, directY, true)
-    }
-    if (((directX === 0 && Math.abs(directY) < 2) || (directY === 0 && Math.abs(directX) < 2))) {
-        return move($elem, directX, directY)
-    }
-}
-
 function validateWin() {
     const combination = playground.querySelectorAll('[data-type="piece"]')
-    if ((FS.posX === 0 && FS.posY === 0) || (FS.posX === size-1 && FS.posY === size-1)) {
+    if ((FS.posX === size-1 && FS.posY === size-1)) {
         for (let i = 0; i < combination.length; i++) {
             if (parseInt(combination[i].innerHTML) !== i+1) {
                 if (i+2 === combination.length) {
-                    return move(combination[i], 1, 0) 
+                    return move(combination[i], combination[i+1]) 
                 }
                 return
             }
@@ -215,6 +157,7 @@ function validateWin() {
         stopGame()
     }
 }
+
 function validateGame() {
     const combination = playground.querySelectorAll('[data-type="piece"]')
     let validateSum = size%2 === 0 ? parseInt(FS.dataset.startrow) : 0;
@@ -252,6 +195,7 @@ function stopGame() {
 function showResultPage(move) {
     board.dataset.type = 'resultPage'
     clearBoard()
+    baseEvents()
     backboard.innerHTML=`
     <div class="result">
         <div class="result-text">
@@ -265,6 +209,7 @@ function showResultPage(move) {
         <button class="start-btn" data-type="again">Еще раз</button>
     </div>`
 }
+
 function showStartPage(isInital) {
     board.dataset.type = 'startPage'
     if (isInital) {
@@ -275,6 +220,7 @@ function showStartPage(isInital) {
         }       
     }
     clearBoard()
+    baseEvents()
     backboard.innerHTML = `
     <button class="start-btn" data-type='start'>Start game</button>
     <div class="difficulty">
@@ -283,105 +229,4 @@ function showStartPage(isInital) {
         <i class="fa-sharp fa-solid fa-angle-right" data-type="harder"></i>
     </div>`;
     setSize();
-}
-
-function dragAndDrop(event) {
-
-    $dragelem = event.target
-    let started = false
-    if($dragelem.dataset.type !== 'piece') {
-        return
-    }
-    $dragelem.classList.add('draggable')
-    $dragelem.setAttribute('draggable', true)
-    playground.addEventListener('dragover', dragOver)
-    playground.addEventListener('dragstart', dragStart)
-    playground.addEventListener('drop', dragDrop)
-    playground.addEventListener('dragenter', dragEnter)
-    playground.addEventListener('dragleave', dragLeave)
-    playground.addEventListener('dragend', clearDrag)
-
-    function dragStart(event) {
-        started = true
-        $dragelem = event.target
-        $dragelem.classList.add('hold')
-        setTimeout(() => {$dragelem.classList.add('hide')}, 0);
-    }
-    function dragOver(event) {
-        event.preventDefault()
-    }
-    function dragEnter(event) {
-        event.target.classList.add('hovered')
-    }
-    function dragLeave(event) {
-        event.target.classList.remove('hovered')
-    }
-    function dragDrop(event) {
-        event.target.classList.remove('hovered')
-        direction($dragelem, event.target)  
-        clearDrag() 
-    }
-    setTimeout(() => {
-        !started && clearDrag()
-    }, 5000)
-    function clearDrag() {
-        $dragelem.classList.remove('hide')
-        $dragelem.classList.remove('hold')
-        $dragelem.classList.remove('draggable')
-        $dragelem.removeAttribute('draggable', true)
-        playground.removeEventListener('dragover', dragOver)
-        playground.removeEventListener('dragstart', dragStart)
-        playground.removeEventListener('drop', dragDrop)
-        playground.removeEventListener('dragenter', dragEnter)
-        playground.removeEventListener('dragleave', dragLeave)
-        playground.removeEventListener('dragend', clearDrag)
-    }
-}
-
-function keyActions(event) {
-    event.preventDefault()
-    switch (board.dataset.type) {
-        case 'startPage':
-            event.key === 'Enter' && startGame(size)
-            event.key === 'ArrowLeft' && setSize(-1)
-            event.key === 'ArrowRight' && setSize(+1)
-            break;
-        case 'playPage':
-            playgroundKeys(event)
-            break;
-        case 'resultPage':
-            event.key === 'Enter' && showStartPage(size)
-            break;
-        default:
-            break;
-    }
-    
-    function playgroundKeys(event) {
-        const x = FS.posX
-        const y = FS.posY
-        switch (event.key) {
-            case 'ArrowUp':
-                try{direction(playground.childNodes[y+1].childNodes[x], FS)}
-                catch {return}   
-                break;
-            case 'ArrowDown':
-                try{direction(playground.childNodes[y-1].childNodes[x], FS)}
-                catch {return} 
-                break;
-            case 'ArrowLeft':
-                try{direction(playground.childNodes[y].childNodes[x+1], FS)}
-                catch {return} 
-                break;
-            case 'ArrowRight':
-                try{direction(playground.childNodes[y].childNodes[x-1], FS)}
-                catch {return} 
-                break;
-            case 'Enter':
-                startGame(size)
-                break;
-            case 'Escape':
-                showStartPage()
-                break;
-        }
-    }
 }
