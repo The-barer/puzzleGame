@@ -45,7 +45,7 @@ function promptText(event) {
     if(event.type === 'touchstart') {
         dragPrompt.innerHTML = 'Каснитесь и подержите на объекте, переставьте'
     } else {
-        dragPrompt.innerHTML = 'Нажимить два раза на объект, затем перетащите'
+        dragPrompt.innerHTML = 'Нажимить на объект, затем перетащите'
     }
 }
 

@@ -112,19 +112,24 @@ function move($elem, $newPlace) {
     if (isMoveing) {
         return 
     }
-    isMoveing = true
+    
     const newX = $newPlace.posX
     const newY = $newPlace.posY 
     const oldX = $elem.posX
     const oldY = $elem.posY
     if ($elem.classList.contains('draggable')) {
-        return replace()
-    } else {
+        isMoveing = true
+        replace();
+        return 
+    } else if(Math.abs(newX-oldX) === 1 && newY === oldY || Math.abs(newY-oldY) === 1 && newX === oldX) {
+        isMoveing = true
         const sizeY = $elem.getBoundingClientRect().height
         const sizeX = $elem.getBoundingClientRect().height
         $elem.style.transform = `translate(${(newX-oldX)*sizeX}px, ${(newY-oldY)*sizeY}px)`;
         setTimeout(replace, 200);
-    }
+        return
+    } else return
+    
     function replace() {
         $elem.style = ''
         playground.childNodes[newY].insertBefore($elem, $newPlace);
