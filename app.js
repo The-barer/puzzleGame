@@ -193,11 +193,11 @@ function move($elem, newX, newY, drag = false) {
 function direction($elem, $newPlace) {
     const directX = $newPlace.posX - $elem.posX
     const directY = $newPlace.posY - $elem.posY
+    if ($elem.classList.contains('draggable')) {
+        return move($elem, directX, directY, true)
+    }
     if (((directX === 0 && Math.abs(directY) < 2) || (directY === 0 && Math.abs(directX) < 2))) {
         return move($elem, directX, directY)
-    }
-    if ($elem.classList.contains('draggable')) {
-        move($elem, directX, directY, true)
     }
 }
 
